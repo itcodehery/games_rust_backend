@@ -1,12 +1,13 @@
 use serde::{Deserialize, Serialize};
+use std::fmt::Display;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct GameInfo {
-    name: String,
-    completed: bool,
-    game_type: GameType,
-    genre: Genre,
-    rating: f64,
+    pub name: String,
+    pub completed: bool,
+    pub game_type: GameType,
+    pub genre: Genre,
+    pub rating: f64,
 }
 
 impl GameInfo {
@@ -37,12 +38,42 @@ impl GameInfo {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+impl From<&GameInfo> for String {
+    fn from(value: &GameInfo) -> Self {
+        format!(
+            "{{name : {}, completed: {}, genre: {}, rating: {}, game_type: {}}}",
+            value.name, value.completed, value.genre, value.rating, value.game_type
+        )
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub enum GameType {
     Campaign,
     Multiplayer,
 }
 
+// impl From<GameType> for String {
+//     fn from(value: GameType) -> Self {
+//         match value {
+//             GameType::Campaign => "Campaign".to_string(),
+//             GameType::Multiplayer => "Multiplayer".to_string(),
+//         }
+//     }
+// }
+
+impl Display for GameType {
+    #[allow(unused_variables)]
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let x = match self {
+            GameType::Campaign => "Campaign",
+            GameType::Multiplayer => "Multiplayer",
+        };
+        Ok(write!(f, "{}", x)?)
+    }
+}
+
+#[derive(Debug)]
 pub enum Genre {
     FirstPersonShooter,
     RPG,
@@ -51,6 +82,22 @@ pub enum Genre {
     StoryDriven,
     Puzzle,
     Unknown,
+}
+
+impl Display for Genre {
+    #[allow(unused_variables)]
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let x = match self {
+            Genre::FirstPersonShooter => "First Person Shooter",
+            Genre::RPG => "RPG",
+            Genre::Puzzle => "Puzzle",
+            Genre::SciFiMilitaryFPS => "Sci-fi Military FPS",
+            Genre::ThirdPersonAdventure => "Third Person Adventure",
+            Genre::StoryDriven => "Story-Driven",
+            Genre::Unknown => "Unknown",
+        };
+        Ok(write!(f, "{}", x)?)
+    }
 }
 
 impl Genre {
@@ -63,18 +110,6 @@ impl Genre {
             "Third Person Adventure" => Genre::ThirdPersonAdventure,
             "Story-Driven" => Genre::StoryDriven,
             _ => Genre::Unknown,
-        }
-    }
-
-    fn to_string(&self) -> &str {
-        match self {
-            Genre::FirstPersonShooter => "First Person Shooter",
-            Genre::RPG => "RPG",
-            Genre::Puzzle => "Puzzle",
-            Genre::SciFiMilitaryFPS => "Sci-fi Military FPS",
-            Genre::ThirdPersonAdventure => "Third Person Adventure",
-            Genre::StoryDriven => "Story-Driven",
-            Genre::Unknown => "Unknown",
         }
     }
 }
@@ -95,6 +130,6 @@ impl Serialize for Genre {
         S: serde::Serializer,
     {
         let s = self.to_string();
-        serializer.serialize_str(s)
+        serializer.serialize_str(s.as_str())
     }
 }
