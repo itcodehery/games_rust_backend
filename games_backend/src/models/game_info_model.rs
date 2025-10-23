@@ -1,11 +1,30 @@
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use std::fmt::Display;
 
-#[derive(Serialize, Deserialize, Debug)]
+fn deserialize_yes_no<'de, D>(deserializer: D) -> Result<bool, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s: &str = Deserialize::deserialize(deserializer)?;
+    match s {
+        "Yes" => Ok(true),
+        "No" => Ok(false),
+        "-" => Ok(false),
+        _ => Err(serde::de::Error::invalid_value(
+            serde::de::Unexpected::Str(s),
+            &"Yes, No, or -",
+        )),
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GameInfo {
     pub name: String,
+    #[serde(deserialize_with = "deserialize_yes_no")]
     pub completed: bool,
+    #[serde(rename = "type")]
     pub game_type: GameType,
+    #[serde(rename = "Genre")]
     pub genre: Genre,
     pub rating: f64,
 }
@@ -47,10 +66,12 @@ impl From<&GameInfo> for String {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum GameType {
     Campaign,
     Multiplayer,
+    #[serde(rename = "Campaign + Multiplayer")]
+    Both,
 }
 
 // impl From<GameType> for String {
@@ -68,12 +89,13 @@ impl Display for GameType {
         let x = match self {
             GameType::Campaign => "Campaign",
             GameType::Multiplayer => "Multiplayer",
+            GameType::Both => "Campaign + Multiplayer",
         };
         Ok(write!(f, "{}", x)?)
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Genre {
     FirstPersonShooter,
     RPG,

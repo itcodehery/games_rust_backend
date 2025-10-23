@@ -9,19 +9,26 @@ pub struct Database {
 
 #[allow(dead_code)]
 impl Database {
-    #[allow(dead_code)]
     fn new(vec: Vec<GameInfo>) -> Self {
         Self { vec }
     }
 
-    #[allow(dead_code)]
-    fn add_game(&mut self, game: GameInfo) {
+    pub fn get_all(&self) -> &Vec<GameInfo> {
+        &self.vec
+    }
+
+    pub fn get_by_name(&self, name: &str) -> Option<&GameInfo> {
+        self.vec.iter().find(|game| game.name == name)
+    }
+
+    pub fn add_game(&mut self, game: GameInfo) {
         self.vec.push(game);
     }
 
-    #[allow(dead_code)]
-    fn remove_game_by_name(&mut self, game_name: String) {
-        let _ = self.vec.pop_if(|x| x.name == game_name);
+    pub fn remove_game_by_name(&mut self, game_name: &str) -> bool {
+        let old_len = self.vec.len();
+        self.vec.retain(|game| game.name != game_name);
+        self.vec.len() < old_len
     }
 }
 
